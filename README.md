@@ -137,12 +137,18 @@ python main_code.py best.pt <이미지 시퀀스 폴더>
 
 ### 2. C++ (Windows, MSVC)
 
-```bash
+```powershell
 cd cpp
 cmake -B build -G "Visual Studio 17 2022" -DOpenCV_DIR=<OpenCV 설치 경로>/build
 cmake --build build --config Release
-.\build\Release\fcw.exe <실행 인자>
+.\build\Release\fcw.exe best.onnx <이미지 시퀀스 폴더>
 ```
+
+| 인자 | 설명 |
+|---|---|
+| `best.onnx` | ONNX 모델 가중치 경로 |
+| `image_dir` | 입력 이미지 시퀀스 폴더 |
+| `--no-display` | 결과 화면 창을 띄우지 않음 (선택) |
 
 - MinGW용 OpenCV 배포판은 MSVC와 호환되지 않으므로 MSVC용(`vc16`) 빌드를 사용해야 합니다.
 - 실행 시 `opencv_world4100.dll`을 찾지 못한다는 오류가 나면, `<OpenCV 설치 경로>/build/x64/vc16/bin`을 PATH에 추가하거나 해당 DLL을 `fcw.exe`와 같은 폴더에 복사해주세요.
