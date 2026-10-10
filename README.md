@@ -4,7 +4,7 @@
 Safe / Caution / Danger 3단계로 판정하는 알고리즘입니다.
 Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 동일성을 검증하고 실행 시간을 비교했습니다.
 
-![demo](docs/<result_image_1.png)
+![demo](docs/result_image_1.png)
 
 ▶ 시연 영상: https://youtu.be/LX0IAwTUEaE
 
