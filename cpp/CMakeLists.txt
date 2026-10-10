@@ -11,11 +11,16 @@ endif()
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs highgui dnn)
 
+# 본 프로그램
 add_executable(fcw main_code.cpp)
-target_include_directories(fcw PRIVATE ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(fcw PRIVATE ${OpenCV_LIBS})
+# 결과 동일성 검증 프로그램 (main_code.cpp의 위험도 로직을 그대로 포함)
+add_executable(verify verify_cpp.cpp)
 
-# 소스의 한글 주석을 MSVC가 UTF-8로 읽도록 설정
-if(MSVC)
-  target_compile_options(fcw PRIVATE /utf-8)
-endif()
+foreach(target fcw verify)
+  target_include_directories(${target} PRIVATE ${OpenCV_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+  target_link_libraries(${target} PRIVATE ${OpenCV_LIBS})
+  # 소스의 한글 주석을 MSVC가 UTF-8로 읽도록 설정
+  if(MSVC)
+    target_compile_options(${target} PRIVATE /utf-8)
+  endif()
+endforeach()
