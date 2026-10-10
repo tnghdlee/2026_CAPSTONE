@@ -4,7 +4,7 @@
 Safe / Caution / Danger 3단계로 판정하는 알고리즘입니다.
 Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 동일성을 검증하고 실행 시간을 비교했습니다.
 
-![demo](docs/<결과 이미지 파일명>)
+![demo](docs/<result_image_1.png)
 
 ▶ 시연 영상: https://youtu.be/LX0IAwTUEaE
 
@@ -82,8 +82,6 @@ Total = 공간 위험도(40) + 시간 위험도(50) + 객체 가중치(10)
 ### 결과 동일성 검증
 무작위 시나리오 **1,850건**을 두 구현에 동일하게 입력해 위험도 결과가 **모두 일치**함을 확인했습니다.
 
-- 검증 코드: `<파일명>`의 `<함수명 또는 실행 옵션>`
-
 ### 실행 시간 비교
 - 조건: 동일 영상 988프레임, CPU, 3회 측정
 - 이미지 읽기 / 추론 / 추적 / 위험도 계산 / 시각화 구간별로 같은 위치에 타이머 삽입
@@ -127,8 +125,15 @@ wget -P cpp https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/bes
 ```bash
 cd python
 pip install -r requirements.txt
-python main_code.py <실행 인자>
+python main_code.py best.pt <이미지 시퀀스 폴더>
 ```
+
+| 인자 | 설명 |
+|---|---|
+| `model_path` | 모델 가중치 경로 (`best.pt`) |
+| `image_dir` | 입력 이미지 시퀀스 폴더 |
+| `--no-display` | 결과 화면 창을 띄우지 않음 (선택) |
+| `--device` | 추론 장치 지정, 예: `cpu`, `0` (선택) |
 
 ### 2. C++ (Windows, MSVC)
 
