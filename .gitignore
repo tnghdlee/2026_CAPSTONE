@@ -1,0 +1,11 @@
+build/
+.vscode/
+.venv/
+__pycache__/
+*.pt
+*.onnx
+*.dll
+output_10frame/
+verification/scenario.csv
+verification/py_risk.txt
+verification/cpp_risk.txt
