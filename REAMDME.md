@@ -4,7 +4,7 @@
 Safe / Caution / Danger 3단계로 판정하는 알고리즘입니다.
 Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 동일성을 검증하고 실행 시간을 비교했습니다.
 
-![demo](docs/demo.gif)
+![demo](docs/<결과 이미지 파일명>)
 
 ▶ 시연 영상: https://youtu.be/LX0IAwTUEaE
 
@@ -18,6 +18,16 @@ Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 �
 | 데이터 | AiHub 주행 이미지 시퀀스 (재배포 제한으로 미포함) |
 | 기술 | Python, YOLOv8m, OpenCV / C++17, OpenCV 4.10 DNN, ONNX, CMake, MSVC |
 
+## 파일 구조
+
+| 경로 | 설명 |
+|---|---|
+| `python/main_code.py` | 원본 구현 (YOLOv8 추론·추적·위험도·시각화) |
+| `python/requirements.txt` | Python 패키지 목록 |
+| `cpp/main_code.cpp` | C++ 이식본 (OpenCV DNN 추론, IoU 추적기, 위험도 산출) |
+| `cpp/CMakeLists.txt` | Windows(MSVC) 빌드 설정 |
+| `docs/` | 결과 화면 |
+
 ## 문제 정의
 
 생활도로는 차선이 불분명하고 보행자·개인형 이동장치(PM)·차량이 섞여 있어 일반 도로용 ADAS로 대응하기 어렵습니다.
@@ -28,10 +38,12 @@ Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 �
 ### 1. 시간 위험도 (TTC)
 - 프레임 간 바운딩 박스 면적 변화율(AER)로 TTC를 역산 (Nègre et al., 2008)
 - 임계값
-  | 대상 | 위험 | 경고 | 근거 |
-  |---|---|---|---|
-  | 차량 | 1.5초 | 4초 | van der Horst & Hogema (1993) |
-  | 보행자 | 2.5초 | 5초 | 운전자 제동 시작 시점 기준 |
+
+| 대상 | 위험 | 경고 | 근거 |
+|---|---|---|---|
+| 차량 | 1.5초 | 4초 | van der Horst & Hogema (1993) |
+| 보행자 | 2.5초 | 5초 | 운전자 제동 시작 시점 기준 |
+
 - 임계값 사이 구간은 비선형 방정식으로 연속적인 위험도 산출
 
 ### 2. 공간 위험도 (ROI)
@@ -39,9 +51,11 @@ Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 �
 - ROI 밖 주차 차량 등은 위험도 0으로 억제
 
 ### 3. 통합 위험도 (Total Risk Score)
+
 ```
 Total = 공간 위험도(40) + 시간 위험도(50) + 객체 가중치(10)
 ```
+
 | 판정 | 범위 |
 |---|---|
 | Safe | 40 이하 |
@@ -67,7 +81,8 @@ Total = 공간 위험도(40) + 시간 위험도(50) + 객체 가중치(10)
 
 ### 결과 동일성 검증
 무작위 시나리오 **1,850건**을 두 구현에 동일하게 입력해 위험도 결과가 **모두 일치**함을 확인했습니다.
-→ [`verification/`](verification/)
+
+- 검증 코드: `<파일명>`의 `<함수명 또는 실행 옵션>`
 
 ### 실행 시간 비교
 - 조건: 동일 영상 988프레임, CPU, 3회 측정
@@ -83,25 +98,47 @@ Total = 공간 위험도(40) + 시간 위험도(50) + 객체 가중치(10)
 - 입력 크기: 640×384 vs 640×640
 
 따라서 언어 간 비교는 조건이 같은 **알고리즘 구간(위험도 산출)**으로 한정했습니다.
-→ [`benchmark/`](benchmark/)
 
 ## 실행 방법
 
-### Python
+### 0. 저장소 및 모델 다운로드
+
+```bash
+git clone https://github.com/tnghdlee/2026_CAPSTONE.git
+cd 2026_CAPSTONE
+```
+
+모델 가중치는 용량 문제로 [Releases](https://github.com/tnghdlee/2026_CAPSTONE/releases)에 별도로 첨부했습니다.
+
+| 파일 | 용도 | 저장 위치 |
+|---|---|---|
+| [best.pt](https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.pt) | Python 구현 | `python/` |
+| [best.onnx](https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.onnx) | C++ 구현 (OpenCV DNN) | `cpp/` |
+
+터미널에서 받으려면:
+
+```bash
+wget -P python https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.pt
+wget -P cpp https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.onnx
+```
+
+### 1. Python
+
 ```bash
 cd python
 pip install -r requirements.txt
-python main.py --source <이미지 시퀀스 경로>
+python main_code.py <실행 인자>
 ```
 
-### C++ (Windows, MSVC)
+### 2. C++ (Windows, MSVC)
+
 ```bash
 cd cpp
 cmake -B build -G "Visual Studio 17 2022" -DOpenCV_DIR=<OpenCV 설치 경로>/build
 cmake --build build --config Release
-./build/Release/<실행파일명>.exe <이미지 시퀀스 경로> <onnx 모델 경로>
+.\build\Release\<실행파일명>.exe <실행 인자>
 ```
-- 모델 가중치는 [Releases](<릴리스 링크>)에서 다운로드
+
 - MinGW용 OpenCV 배포판은 MSVC와 호환되지 않으므로 MSVC용(`vc16`) 빌드를 사용해야 합니다.
 
 ## 한계 및 개선 방향
