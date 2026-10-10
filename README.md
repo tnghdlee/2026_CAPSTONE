@@ -16,7 +16,7 @@ Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 �
 | 팀 구성 | 4인 (C++ 이식·검증은 개인 진행) |
 | 담당 | 모델·데이터 탐색, 위험도 알고리즘 전체 구현, C++ 이식·검증·측정 |
 | 데이터 | AiHub 주행 이미지 시퀀스 (재배포 제한으로 미포함) |
-| 기술 | Python, YOLOv8m, OpenCV / C++17, OpenCV 4.10 DNN, ONNX, CMake, MSVC |
+| 기술 | Python, YOLOv8m, OpenCV / C++17, OpenCV 4.10 DNN, ONNX, CMake, MSVC, GCC |
 
 ## 파일 구조
 
@@ -26,7 +26,7 @@ Python으로 구현한 캡스톤디자인 결과물을 C++로 이식해 결과 �
 | `python/requirements.txt` | Python 패키지 목록 |
 | `cpp/main_code.cpp` | C++ 이식본 (OpenCV DNN 추론, IoU 추적기, 위험도 산출) |
 | `cpp/verify_cpp.cpp` | 검증용 C++ 프로그램 (시나리오를 C++ 위험도 로직에 입력) |
-| `cpp/CMakeLists.txt` | Windows(MSVC) 빌드 설정 (`fcw`, `verify` 두 실행 파일 생성) |
+| `cpp/CMakeLists.txt` | 빌드 설정 (`fcw`, `verify` 두 실행 파일 생성) |
 | `verification/verify_python.py` | 무작위 시나리오 생성 + 원본 Python 코드 실행 |
 | `verification/verify_compare.py` | Python·C++ 결과 비교 및 판정 분포 출력 |
 | `docs/` | 결과 화면 |
@@ -89,7 +89,8 @@ YOLO 검출·추적을 제외한 **위험도 로직**이 원본과 같은 결과
 - 객체 움직임: 접근(박스 확대), 이탈, 좌우 이동, 급격한 위치 변화(회전 상황)
 - 원본 Python 코드는 **수정 없이** 실행하고, YOLO 모델·이미지 입력·화면 출력만 가짜로 대체
 - C++은 `main_code.cpp`의 `computeRisk()`, `buildFrameContext()`를 그대로 포함해 실행
-- 결과: 위험도 값 **1,850건 모두 일치** (판정 분포: SAFE <n> / CAUTION <n> / DANGER <n>)
+- 결과: 위험도 값 **1,850건 모두 일치** (판정 분포: SAFE 1,562 / CAUTION 207 / DANGER 81)
+- Windows(MSVC)와 Ubuntu(GCC) 두 환경에서 빌드한 C++ 모두 동일한 결과 확인
 
 ### 실행 시간 비교
 - 조건: 동일 영상 988프레임, CPU, 3회 측정
@@ -125,9 +126,11 @@ cd 2026_CAPSTONE
 터미널에서 받으려면:
 
 ```bash
-wget -P python https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.pt
-wget -P cpp https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.onnx
+curl -L -o python/best.pt https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.pt
+curl -L -o cpp/best.onnx https://github.com/tnghdlee/2026_CAPSTONE/releases/download/v1.0/best.onnx
 ```
+
+- Windows PowerShell에서는 `curl` 대신 `curl.exe`로 입력해주세요.
 
 ### 1. Python
 
@@ -163,15 +166,38 @@ cmake --build build --config Release
 - MinGW용 OpenCV 배포판은 MSVC와 호환되지 않으므로 MSVC용(`vc16`) 빌드를 사용해야 합니다.
 - 실행 시 `opencv_world4100.dll`을 찾지 못한다는 오류가 나면, `<OpenCV 설치 경로>/build/x64/vc16/bin`을 PATH에 추가하거나 해당 DLL을 실행 파일과 같은 폴더에 복사해주세요.
 
+### 2-1. C++ (Ubuntu, GCC)
+
+```bash
+sudo apt install build-essential cmake libopencv-dev
+cd cpp
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/fcw best.onnx <이미지 시퀀스 폴더>
+```
+
+- Linux에서는 실행 파일이 `build/` 바로 아래에 `fcw`, `verify`로 생성됩니다.
+
 ### 3. 결과 동일성 검증 재현
 
 C++ 빌드를 먼저 완료한 뒤, 저장소 최상위 폴더에서 실행합니다.
+
+Windows:
 
 ```powershell
 cd verification
 python verify_python.py ..\python\main_code.py
 ..\cpp\build\Release\verify.exe scenario.csv cpp_risk.txt
 python verify_compare.py
+```
+
+Ubuntu:
+
+```bash
+cd verification
+python3 verify_python.py ../python/main_code.py
+../cpp/build/verify scenario.csv cpp_risk.txt
+python3 verify_compare.py
 ```
 
 | 단계 | 출력 |
@@ -190,7 +216,5 @@ python verify_compare.py
 - A. Nègre et al., "Real-Time Time-to-Collision from Variation of Intrinsic Scale," *Experimental Robotics*, Springer, 2008.
 - R. van der Horst and J. Hogema, "Time-to-Collision and Collision Avoidance Systems," *Proceedings of the 6th ICTCT Workshop*, Salzburg, 1993.
 - 이아영, 이호준, 이경수, "자율주행 인지 모듈의 실시간 성능을 위한 적응형 관심 영역 판단," *자동차안전학회지*, 제14권, 제2호, pp. 20-25, 2022.
-- Euro NCAP, "AEB/LSS VRU Test Protocol v4.0.0," 2023.
-- ISO, "ISO 15623:2013 Forward Vehicle Collision Warning Systems," 2013.
 - Ultralytics, "YOLOv8," GitHub, 2023. https://github.com/ultralytics/ultralytics
 - AI Hub, "생활도로 객체인식 자율주행 데이터," 한국지능정보사회진흥원(NIA), 2023. https://www.aihub.or.kr
