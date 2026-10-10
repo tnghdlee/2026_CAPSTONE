@@ -136,15 +136,18 @@ python main_code.py <실행 인자>
 cd cpp
 cmake -B build -G "Visual Studio 17 2022" -DOpenCV_DIR=<OpenCV 설치 경로>/build
 cmake --build build --config Release
-.\build\Release\<실행파일명>.exe <실행 인자>
+.\build\Release\fcw.exe <실행 인자>
 ```
 
 - MinGW용 OpenCV 배포판은 MSVC와 호환되지 않으므로 MSVC용(`vc16`) 빌드를 사용해야 합니다.
+- 실행 시 `opencv_world4100.dll`을 찾지 못한다는 오류가 나면, `<OpenCV 설치 경로>/build/x64/vc16/bin`을 PATH에 추가하거나 해당 DLL을 `fcw.exe`와 같은 폴더에 복사해주세요.
 
 ## 한계 및 개선 방향
 - 오르막·내리막에서 ROI가 실제 주행 경로와 어긋나는 문제 → IMU 연동 동적 ROI
 - C++ 추론 입력 크기를 Python과 맞춘 전체 파이프라인 재비교
 
 ## 참고 문헌
-- Nègre, A. et al. (2008). <논문 제목>
-- van der Horst, R. & Hogema, J. (1993). <논문 제목>
+- A. Nègre et al., "Real-Time Time-to-Collision from Variation of Intrinsic Scale," *Experimental Robotics*, Springer, 2008.
+- R. van der Horst and J. Hogema, "Time-to-Collision and Collision Avoidance Systems," *Proceedings of the 6th ICTCT Workshop*, Salzburg, 1993.
+- Ultralytics, "YOLOv8," GitHub, 2023. https://github.com/ultralytics/ultralytics
+- AI Hub, "생활도로 객체인식 자율주행 데이터," 한국지능정보사회진흥원(NIA), 2023. https://www.aihub.or.kr
